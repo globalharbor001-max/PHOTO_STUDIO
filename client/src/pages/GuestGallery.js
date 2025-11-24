@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { eventAPI, photoAPI } from '../services/api';
 import { toast } from 'react-toastify';
-import { FaDownload, FaImages, FaLock } from 'react-icons/fa';
+import { FaDownload, FaImages, FaLock, FaLink } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { getImageUrl } from '../utils/imageHelper';
 import './GuestGallery.css';
@@ -37,6 +37,17 @@ const GuestGallery = () => {
     } else {
       toast.warning(event?.downloadMessage || 'Downloads are currently disabled');
     }
+  };
+
+  const copyGalleryLink = () => {
+    const galleryUrl = window.location.href;
+    navigator.clipboard.writeText(galleryUrl)
+      .then(() => {
+        toast.success('Gallery link copied to clipboard!');
+      })
+      .catch(() => {
+        toast.error('Failed to copy link');
+      });
   };
 
   if (loading) {
@@ -76,6 +87,9 @@ const GuestGallery = () => {
                 <FaLock /> Downloads Locked
               </span>
             )}
+            <button className="copy-link-btn" onClick={copyGalleryLink} title="Copy gallery link">
+              <FaLink /> Share
+            </button>
           </div>
         </div>
       </div>

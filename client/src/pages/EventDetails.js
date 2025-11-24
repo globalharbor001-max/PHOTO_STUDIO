@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { eventAPI, photoAPI, guestAPI } from '../services/api';
 import { toast } from 'react-toastify';
-import { FaQrcode, FaDownload, FaUpload, FaUsers, FaImages, FaCog } from 'react-icons/fa';
+import { FaQrcode, FaDownload, FaUpload, FaUsers, FaImages, FaCog, FaLink } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { getImageUrl } from '../utils/imageHelper';
 import './EventDetails.css';
@@ -79,6 +79,19 @@ const EventDetails = () => {
     }
   };
 
+  const copyGalleryLink = () => {
+    if (event?.accessCode) {
+      const galleryUrl = `${window.location.origin}/gallery/${event.accessCode}`;
+      navigator.clipboard.writeText(galleryUrl)
+        .then(() => {
+          toast.success('Gallery link copied to clipboard!');
+        })
+        .catch(() => {
+          toast.error('Failed to copy link');
+        });
+    }
+  };
+
   if (loading) {
     return (
       <div className="container" style={{ paddingTop: '2rem' }}>
@@ -106,6 +119,9 @@ const EventDetails = () => {
             <p>{event.clientName} • {format(new Date(event.eventDate), 'MMMM dd, yyyy')}</p>
           </div>
           <div className="event-actions">
+            <button className="btn btn-outline" onClick={copyGalleryLink}>
+              <FaLink /> Copy Link
+            </button>
             <button className="btn btn-outline" onClick={downloadQRCode}>
               <FaQrcode /> Download QR
             </button>
