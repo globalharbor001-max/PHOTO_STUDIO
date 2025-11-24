@@ -4,6 +4,7 @@ import { eventAPI, photoAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { FaDownload, FaImages, FaLock } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { getImageUrl } from '../utils/imageHelper';
 import './GuestGallery.css';
 
 const GuestGallery = () => {
@@ -86,7 +87,7 @@ const GuestGallery = () => {
               <div key={photo._id} className="gallery-item">
                 <div className="gallery-image">
                   <img
-                    src={`/uploads/${photo.thumbnailPath || photo.filePath}`}
+                    src={getImageUrl(photo)}
                     alt={photo.originalName}
                     onError={(e) => {
                       e.target.src = 'https://via.placeholder.com/400x300?text=Photo';
