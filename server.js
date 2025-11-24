@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const connectDB = require('./config/database');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -10,6 +11,18 @@ const app = express();
 
 // Connect to database
 connectDB();
+
+// Ensure upload directories exist
+const uploadPath = process.env.UPLOAD_PATH || '/tmp/photo-studio/uploads';
+const thumbnailPath = path.join(uploadPath, 'thumbnails');
+const watermarkedPath = path.join(uploadPath, 'watermarked');
+
+[uploadPath, thumbnailPath, watermarkedPath].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`✅ Created directory: ${dir}`);
+  }
+});
 
 // Middleware
 app.use(cors({

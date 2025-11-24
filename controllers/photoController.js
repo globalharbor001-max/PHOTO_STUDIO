@@ -51,14 +51,14 @@ exports.uploadPhotos = async (req, res, next) => {
         const thumbnailPath = path.join(thumbnailDir, file.filename);
         await generateThumbnail(file.path, thumbnailPath);
 
-        // Create photo document
+        // Create photo document (store only filenames, not full paths)
         return {
           event: eventId,
           subEvent: subEvent || null,
           filename: file.filename,
           originalName: file.originalname,
-          filePath: file.path,
-          thumbnailPath,
+          filePath: file.filename, // Store only filename
+          thumbnailPath: `thumbnails/${file.filename}`, // Relative path for thumbnail
           fileSize: file.size,
           mimeType: file.mimetype,
           dimensions: {
@@ -221,19 +221,22 @@ exports.downloadPhoto = async (req, res, next) => {
       actionType: 'download'
     });
 
-    // Send file
-    const filePath = photo.isWatermarked && photo.watermarkedPath
+    // Construct absolute file path from filename
+    const uploadPath = process.env.UPLOAD_PATH || '/tmp/photo-studio/uploads';
+    const relativeFilePath = photo.isWatermarked && photo.watermarkedPath
       ? photo.watermarkedPath
       : photo.filePath;
 
-    if (!fs.existsSync(filePath)) {
+    const absoluteFilePath = path.join(uploadPath, relativeFilePath);
+
+    if (!fs.existsSync(absoluteFilePath)) {
       return res.status(404).json({
         success: false,
         message: 'Photo file not found'
       });
     }
 
-    res.download(filePath, photo.originalName);
+    res.download(absoluteFilePath, photo.originalName);
   } catch (error) {
     next(error);
   }
@@ -280,12 +283,17 @@ exports.addWatermark = async (req, res, next) => {
       });
     }
 
-    // Generate watermarked image path
-    const watermarkDir = path.join(path.dirname(photo.filePath), 'watermarked');
+    // Construct absolute paths
+    const uploadPath = process.env.UPLOAD_PATH || '/tmp/photo-studio/uploads';
+    const absoluteInputPath = path.join(uploadPath, photo.filePath);
+    const watermarkDir = path.join(uploadPath, 'watermarked');
+
     if (!fs.existsSync(watermarkDir)) {
       fs.mkdirSync(watermarkDir, { recursive: true });
     }
-    const watermarkedPath = path.join(watermarkDir, photo.filename);
+
+    const absoluteWatermarkedPath = path.join(watermarkDir, photo.filename);
+    const relativeWatermarkedPath = `watermarked/${photo.filename}`;
 
     // Apply watermark
     const user = await User.findById(req.user.id);
@@ -293,9 +301,9 @@ exports.addWatermark = async (req, res, next) => {
     if (user.logo && fs.existsSync(user.logo)) {
       // Use logo watermark
       await addLogoWatermark(
-        photo.filePath,
+        absoluteInputPath,
         user.logo,
-        watermarkedPath,
+        absoluteWatermarkedPath,
         {
           opacity: watermarkSettings.opacity,
           position: watermarkSettings.position
@@ -305,8 +313,8 @@ exports.addWatermark = async (req, res, next) => {
       // Use text watermark
       const watermarkText = watermarkSettings.text || user.studioName;
       await addTextWatermark(
-        photo.filePath,
-        watermarkedPath,
+        absoluteInputPath,
+        absoluteWatermarkedPath,
         {
           text: watermarkText,
           opacity: watermarkSettings.opacity,
@@ -315,9 +323,9 @@ exports.addWatermark = async (req, res, next) => {
       );
     }
 
-    // Update photo
+    // Update photo (store relative path)
     photo.isWatermarked = true;
-    photo.watermarkedPath = watermarkedPath;
+    photo.watermarkedPath = relativeWatermarkedPath;
     await photo.save();
 
     res.json({
@@ -373,25 +381,30 @@ exports.addWatermarkToAll = async (req, res, next) => {
     const user = await User.findById(req.user.id);
 
     // Process photos in batches
+    const uploadPath = process.env.UPLOAD_PATH || '/tmp/photo-studio/uploads';
+    const watermarkDir = path.join(uploadPath, 'watermarked');
+
+    if (!fs.existsSync(watermarkDir)) {
+      fs.mkdirSync(watermarkDir, { recursive: true });
+    }
+
     let successCount = 0;
     let errorCount = 0;
 
     for (const photo of photos) {
       try {
-        const watermarkDir = path.join(path.dirname(photo.filePath), 'watermarked');
-        if (!fs.existsSync(watermarkDir)) {
-          fs.mkdirSync(watermarkDir, { recursive: true });
-        }
-        const watermarkedPath = path.join(watermarkDir, photo.filename);
+        const absoluteInputPath = path.join(uploadPath, photo.filePath);
+        const absoluteWatermarkedPath = path.join(watermarkDir, photo.filename);
+        const relativeWatermarkedPath = `watermarked/${photo.filename}`;
 
         if (user.logo && fs.existsSync(user.logo)) {
-          await addLogoWatermark(photo.filePath, user.logo, watermarkedPath, {
+          await addLogoWatermark(absoluteInputPath, user.logo, absoluteWatermarkedPath, {
             opacity: watermarkSettings.opacity,
             position: watermarkSettings.position
           });
         } else {
           const watermarkText = watermarkSettings.text || user.studioName;
-          await addTextWatermark(photo.filePath, watermarkedPath, {
+          await addTextWatermark(absoluteInputPath, absoluteWatermarkedPath, {
             text: watermarkText,
             opacity: watermarkSettings.opacity,
             position: watermarkSettings.position
@@ -399,7 +412,7 @@ exports.addWatermarkToAll = async (req, res, next) => {
         }
 
         photo.isWatermarked = true;
-        photo.watermarkedPath = watermarkedPath;
+        photo.watermarkedPath = relativeWatermarkedPath;
         await photo.save();
         successCount++;
       } catch (error) {
@@ -451,15 +464,26 @@ exports.deletePhoto = async (req, res, next) => {
       });
     }
 
-    // Delete files
-    if (fs.existsSync(photo.filePath)) {
-      fs.unlinkSync(photo.filePath);
+    // Delete files (construct absolute paths)
+    const uploadPath = process.env.UPLOAD_PATH || '/tmp/photo-studio/uploads';
+
+    const absoluteFilePath = path.join(uploadPath, photo.filePath);
+    if (fs.existsSync(absoluteFilePath)) {
+      fs.unlinkSync(absoluteFilePath);
     }
-    if (photo.thumbnailPath && fs.existsSync(photo.thumbnailPath)) {
-      fs.unlinkSync(photo.thumbnailPath);
+
+    if (photo.thumbnailPath) {
+      const absoluteThumbnailPath = path.join(uploadPath, photo.thumbnailPath);
+      if (fs.existsSync(absoluteThumbnailPath)) {
+        fs.unlinkSync(absoluteThumbnailPath);
+      }
     }
-    if (photo.watermarkedPath && fs.existsSync(photo.watermarkedPath)) {
-      fs.unlinkSync(photo.watermarkedPath);
+
+    if (photo.watermarkedPath) {
+      const absoluteWatermarkedPath = path.join(uploadPath, photo.watermarkedPath);
+      if (fs.existsSync(absoluteWatermarkedPath)) {
+        fs.unlinkSync(absoluteWatermarkedPath);
+      }
     }
 
     // Delete photo document

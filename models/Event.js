@@ -55,7 +55,7 @@ const eventSchema = new mongoose.Schema({
   // Download control
   downloadsEnabled: {
     type: Boolean,
-    default: false
+    default: true // Enable downloads by default
   },
   downloadMessage: {
     type: String,
