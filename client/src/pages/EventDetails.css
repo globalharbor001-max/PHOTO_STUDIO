@@ -1,0 +1,262 @@
+.event-details-container {
+  padding: 2rem 0;
+  min-height: calc(100vh - 70px);
+}
+
+.event-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.event-details-header h1 {
+  margin-bottom: 0.5rem;
+  color: var(--gray-900);
+}
+
+.event-details-header p {
+  color: var(--gray-600);
+  font-size: 1.125rem;
+}
+
+.event-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.event-stats-bar {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
+.stat svg {
+  color: var(--primary-color);
+}
+
+.access-code {
+  padding: 0.5rem 1rem;
+  background: var(--gray-100);
+  border-radius: var(--border-radius);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.tab {
+  padding: 1rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--gray-600);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: var(--primary-color);
+}
+
+.tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+  background: var(--white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.upload-section {
+  margin-bottom: 2rem;
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 500;
+}
+
+.upload-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.photo-item {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.photo-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.photo-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.photo-info {
+  padding: 1rem;
+  background: var(--gray-50);
+}
+
+.photo-info p {
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photo-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.guests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.guest-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+}
+
+.guest-info h4 {
+  color: var(--gray-900);
+  margin-bottom: 0.25rem;
+}
+
+.guest-info p {
+  color: var(--gray-600);
+  font-size: 0.875rem;
+}
+
+.guest-stats {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-item strong {
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.info-item span {
+  color: var(--gray-900);
+  font-size: 1rem;
+}
+
+.qr-code-display {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.qr-code-display img {
+  max-width: 300px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .event-details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .event-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .event-actions button {
+    width: 100%;
+  }
+
+  .event-stats-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .photos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guest-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
